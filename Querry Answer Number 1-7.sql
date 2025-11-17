@@ -1,0 +1,99 @@
+CREATE DATABASE PTInovasiDayaSolusi;
+
+CREATE TABLE TabelMotor (
+KodeMotor VARCHAR(10) PRIMARY KEY,
+NamaMotor VARCHAR(255)
+)
+CREATE TABLE TabelCabang (
+KodeCabang VARCHAR(10) PRIMARY KEY,
+NamaCabang VARCHAR(255)
+)
+CREATE TABLE TabelPembayaran(
+NoKontrak INTEGER,
+TglBayar DATETIME,
+JumlahBayar INTEGER,
+KodeCabang VARCHAR(10),
+NoKwitansi VARCHAR(20),
+KodeMotor VARCHAR(10),
+
+FOREIGN KEY (KodeCabang) REFERENCES TabelCabang(KodeCabang),
+FOREIGN KEY (KodeMotor) REFERENCES TabelMotor(KodeMotor)
+)
+
+INSERT INTO TabelMotor (KodeMotor, NamaMotor) VALUES
+('001', 'Suzuki'),
+('002', 'Honda'),
+('003', 'Yamaha'),
+('004', 'Kawasaki');
+
+INSERT INTO TabelCabang (KodeCabang, NamaCabang) VALUES
+(115, 'Jakarta'),
+(145, 'Ciputat'),
+(175, 'Pandeglang'),
+(190, 'Bekasi');
+
+INSERT INTO TabelPembayaran 
+(NoKontrak, TglBayar, JumlahBayar, KodeCabang, NoKwitansi, KodeMotor) VALUES
+('1151500001', '2014-10-20 17:14:13', 200000, 115, '14102000001', '001'),
+('1451500002', '2014-10-20 16:14:13', 300000, 145, '14102000002', '001'),
+('1151500003', '2014-10-20 09:14:13', 350000, 115, '14102000003', '003'),
+('1751500004', '2014-10-19 16:14:13', 500000, 175, '14101900001', '002');
+
+-- 2.	Tuliskan query untuk menampilkan data pembayaran yang dibayar pada tanggal 20-10-2014.
+SELECT *
+FROM TabelPembayaran
+WHERE TglBayar BETWEEN '2014-10-20 00:00:00' AND '2014-10-20 23:59:59';
+
+
+-- 3.   Tuliskan query untuk menambahkan data pada tabel “Cabang”, dengan informasi berikut: kode cabang 200, nama cabang Tangerang.
+INSERT INTO TabelCabang (KodeCabang, NamaCabang)
+VALUES (200, 'Tangerang');
+
+
+-- 4.	Tuliskan query untuk update data “Kode  Motor” pada tabel “Pembayaran” menjadi “001” untuk semua Cabang Jakarta.
+UPDATE TabelPembayaran SET KodeMotor = '001'
+WHERE KodeCabang = (
+	SELECT KodeCabang
+	FROM TabelCabang
+	WHERE NamaCabang = 'Jakarta'
+)
+SELECT * FROM TabelPembayaran
+
+-- 5.
+SELECT 
+    p.NoKontrak,
+    p.TglBayar,
+    p.JumlahBayar,
+    c.NamaCabang,
+    m.NamaMotor
+FROM TabelPembayaran p
+JOIN TabelCabang c ON p.KodeCabang = c.KodeCabang
+JOIN TabelMotor m ON p.KodeMotor = m.KodeMotor;
+
+--6.
+SELECT 
+    c.KodeCabang,
+    c.NamaCabang,
+    p.NoKontrak,
+    p.NoKwitansi
+FROM TabelCabang c
+LEFT JOIN TabelPembayaran p
+    ON c.KodeCabang = p.KodeCabang
+ORDER BY c.KodeCabang;
+
+--7.
+SELECT 
+    c.KodeCabang,
+    c.NamaCabang,
+    COALESCE(COUNT(p.NoKontrak), 0) AS TotalData,
+    COALESCE(SUM(p.JumlahBayar), 0) AS TotalBayar
+FROM TabelCabang c
+LEFT JOIN TabelPembayaran p
+    ON c.KodeCabang = p.KodeCabang
+GROUP BY 
+    c.KodeCabang,
+    c.NamaCabang
+ORDER BY 
+    c.KodeCabang;
+
+
